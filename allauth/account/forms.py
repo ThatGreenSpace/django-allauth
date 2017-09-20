@@ -426,6 +426,15 @@ class ResetPasswordForm(forms.Form):
                                           " to any user account"))
         return self.cleaned_data["email"]
 
+    def send_email(self, email, context):
+        if app_settings.AUTHENTICATION_METHOD != AuthenticationMethod.EMAIL:
+            context['username'] = user_username(context['user'])
+
+        get_adapter(context['request']).send_mail(
+            'account/email/password_reset_key',
+            email,
+            context)
+
     def save(self, request, **kwargs):
         current_site = get_current_site(request)
         email = self.cleaned_data["email"]
@@ -458,13 +467,7 @@ class ResetPasswordForm(forms.Form):
                        "password_reset_url": url,
                        "request": request}
 
-            if app_settings.AUTHENTICATION_METHOD \
-                    != AuthenticationMethod.EMAIL:
-                context['username'] = user_username(user)
-            get_adapter(request).send_mail(
-                'account/email/password_reset_key',
-                email,
-                context)
+            self.send_email(email, context)
         return self.cleaned_data["email"]
 
 
