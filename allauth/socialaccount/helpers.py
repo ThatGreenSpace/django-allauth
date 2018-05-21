@@ -1,3 +1,4 @@
+import django
 from django.contrib import messages
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
@@ -151,7 +152,11 @@ def _social_login_redirect(request, sociallogin):
 
 
 def _complete_social_login(request, sociallogin):
-    if request.user.is_authenticated():
+    if django.VERSION < (1, 10):
+        authenticated = request.user.is_authenticated()
+    else:
+        authenticated = request.user.is_authenticated
+    if authenticated:
         get_account_adapter().logout(request)
     if sociallogin.is_existing:
         # Login existing user

@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import django
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
@@ -106,7 +107,11 @@ class DefaultSocialAccountAdapter(object):
         Returns the default URL to redirect to after successfully
         connecting a social account.
         """
-        assert request.user.is_authenticated()
+        if django.VERSION < (1, 10):
+            authenticated = request.user.is_authenticated()
+        else:
+            authenticated = request.user.is_authenticated
+        assert authenticated
         url = reverse('socialaccount_connections')
         return url
 

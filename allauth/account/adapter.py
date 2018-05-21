@@ -6,6 +6,7 @@ import time
 import warnings
 import hashlib
 
+import django
 from django import forms
 from django.conf import settings
 from django.contrib import messages
@@ -133,7 +134,11 @@ class DefaultAccountAdapter(object):
         that URLs passed explicitly (e.g. by passing along a `next`
         GET parameter) take precedence over the value returned here.
         """
-        assert request.user.is_authenticated()
+        if django.VERSION < (1, 10):
+            authenticated = request.user.is_authenticated()
+        else:
+            authenticated = request.user.is_authenticated
+        assert authenticated
         url = getattr(settings, "LOGIN_REDIRECT_URLNAME", None)
         if url:
             warnings.warn("LOGIN_REDIRECT_URLNAME is deprecated, simply"
@@ -156,7 +161,12 @@ class DefaultAccountAdapter(object):
         """
         The URL to return to after successful e-mail confirmation.
         """
-        if request.user.is_authenticated():
+        if django.VERSION < (1, 10):
+            authenticated = request.user.is_authenticated()
+        else:
+            authenticated = request.user.is_authenticated
+
+        if authenticated:
             if app_settings.EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL:
                 return  \
                     app_settings.EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL

@@ -3,6 +3,7 @@ import json
 
 from datetime import timedelta
 
+import django
 from django.utils.timezone import now
 from django.test.utils import override_settings
 from django.conf import settings
@@ -253,7 +254,11 @@ class AccountTests(TestCase):
             url,
             {'password1': 'newpass123',
              'password2': 'newpass123'})
-        self.assertTrue(user.is_authenticated())
+        if django.VERSION < (1, 10):
+            authenticated = user.is_authenticated()
+        else:
+            authenticated = user.is_authenticated
+        self.assertTrue(authenticated)
         # EmailVerificationMethod.MANDATORY sends us to the confirm-email page
         self.assertRedirects(resp, '/confirm-email/')
 
